@@ -1,7 +1,7 @@
 # Based on code from Joshua Cambell
 #!/usr/bin/env python
 
-import socket, os
+import socket, os, sys, select
 
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -39,8 +39,10 @@ while True:
                 if (part):
                     clientSocket.sendall(part)
                     request.extend(part)
-                else:
+                elif part is None:
                     break
+                else:
+                    exit(0)
 
             if len(request) > 0:
                 print(request)
@@ -57,8 +59,16 @@ while True:
                 if (part):
                     incomingSocket.sendall(part)
                     response.extend(part)
-                else:
+                elif part is None:
                     break
+                else:
+                    exit(0)
             
             if len(response) > 0:
                 print(response)
+
+            select.select(
+                [incomingSocket, clientSocket], # read
+                [],                             # write
+                [incomingSocket, clientSocket], # exceptions
+                1.0)                            #timeout
